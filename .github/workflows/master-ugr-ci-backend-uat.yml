@@ -57,6 +57,10 @@ jobs:
           /o:"ugr-master" \
           /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
           /d:sonar.host.url="https://sonarcloud.io" \
+          /d:sonar.pullrequest.key="${{ github.event.pull_request.number }}" \
+          /d:sonar.pullrequest.branch="${{ github.head_ref }}" \
+          /d:sonar.pullrequest.base="${{ github.base_ref }}" \
+          /d:sonar.github.repository="${{ github.repository }}" \
           /d:sonar.cs.opencover.reportsPaths="${{ env.WORKING_DIRECTORY }}/TestResults/Coverage/coverage.opencover.xml"
         dotnet build "${{ env.WORKING_DIRECTORY }}"
         dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
