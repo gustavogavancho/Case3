@@ -53,8 +53,8 @@ jobs:
         dotnet tool install --global dotnet-sonarscanner
         export PATH="$PATH:/home/runner/.dotnet/tools"
         dotnet sonarscanner begin \
-          /k:"<tu-proyecto-sonarcloud>" \
-          /o:"<tu-organizacion-sonarcloud>" \
+          /k:"ugr-master_case3" \
+          /o:"ugr-master" \
           /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
           /d:sonar.host.url="https://sonarcloud.io" \
           /d:sonar.cs.opencover.reportsPaths="${{ env.WORKING_DIRECTORY }}/TestResults/Coverage/coverage.opencover.xml"
