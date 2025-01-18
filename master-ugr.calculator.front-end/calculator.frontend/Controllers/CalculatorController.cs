@@ -16,8 +16,14 @@ namespace calculator.frontend.Controllers
             Environment.GetEnvironmentVariable("CALCULATOR_BACKEND_URL") ?? 
             "https://master-ugr-ci-backend-uat.azurewebsites.net";
         const string api = "api/Calculator";
+
         private double ExecuteOperation(string operation, double num1, double num2)
         {
+            if (operation.Equals("divide", StringComparison.OrdinalIgnoreCase) && num2 == 0)
+            {
+                return double.NaN; // Manejar división por cero
+            }
+
             var result = 0.0;
             var clientHandler = new HttpClientHandler();
             var client = new HttpClient(clientHandler);
@@ -40,6 +46,7 @@ namespace calculator.frontend.Controllers
             }
             return result;
         }
+
         [HttpPost]
         public ActionResult Index(string firstNumber, string secondNumber, string operation)
         {
