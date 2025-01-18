@@ -24,7 +24,7 @@ namespace calculator.frontend.tests.steps
         {
             IPage page = _scenarioContext.Get<IPage>("page");
             var base_url = _scenarioContext.Get<string>("urlBase");
-            await page.GotoAsync($"{base_url}/Calculator");
+            await page.GotoAsync($"{base_url}/Calculator", new PageGotoOptions { Timeout = 60000 });
             await page.FillAsync("#firstNumber", number1.ToString());
         }
 

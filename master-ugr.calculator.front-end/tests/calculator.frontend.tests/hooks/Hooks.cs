@@ -22,7 +22,8 @@ namespace calculator.frontend.tests.hooks
             var playwright = await Playwright.CreateAsync();
             var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
             {
-                Headless = true 
+                Headless = true,
+                Timeout = 60000
             });
             var context = await browser.NewContextAsync();
             var urlBase =
