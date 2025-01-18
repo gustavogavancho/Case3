@@ -67,6 +67,7 @@ namespace calculator.frontend.tests.steps
             await page.SelectOptionAsync("#operation", "Divide");
             await page.ClickAsync("#calculateButton");
         }
+
         [Then(@"the result should be (.*)")]
         [Then(@"the result is (.*)")]
         [Then(@"the result shall be (.*)")]
@@ -79,6 +80,14 @@ namespace calculator.frontend.tests.steps
             var ok = expectedResult.Equals(americanDouble) || 
                 expectedResult.Equals(latinDouble);
             Assert.True(ok, $"expected {expectedResult} but actual {resultText}");
+        }
+
+        [Then(@"the result should explicitly be NaN")]
+        public async Task ThenTheResultShouldExplicitlyBeNaN()
+        {
+            var page = (IPage)_scenarioContext["page"];
+            var resultText = await page.InnerTextAsync("#result");
+            Assert.True(resultText.Equals("NaN"), $"Expected NaN but got {resultText}");
         }
     }
 }
