@@ -59,6 +59,11 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+    
+    - name: Install Playwright Browsers
+      run: |
+        pwsh bin/Debug/netX/playwright.ps1 install
+      working-directory: ${{ env.WORKING_DIRECTORY }}
 
     - name: Generate Code Coverage
       run: |
