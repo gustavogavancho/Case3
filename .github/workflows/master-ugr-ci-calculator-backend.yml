@@ -11,16 +11,40 @@ on:
     - dev
 
 env:
-  # Environment variables for the workflow
+  AZURE_WEBAPP_NAME: gustavogavanchol-calculator-backend-uat
+  AZURE_WEBAPP_PACKAGE_PATH: master-ugr.calculator.back-end/calculator.backend/publish
+  CONFIGURATION: Release
   DOTNET_CORE_VERSION: 8.0.x
+  WORKING_DIRECTORY: master-ugr.calculator.back-end/calculator.backend
   TEST_PATH: master-ugr.calculator.back-end/tests/calculator.backend.test
+  CALCULATOR_BACKEND_URL: https://gustavogavanchol-calculator-backend-uat.azurewebsites.net/
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
       # Checkout the repository
+
+    - name: Listing current dir
+      run: ls -la
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+
+    - name: Restore
+      run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
+
+    - name: Build
+      run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+
+  test:
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+    - uses: actions/checkout@v4
 
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
