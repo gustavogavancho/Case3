@@ -1,4 +1,4 @@
-name: Run Tests Backend
+name: Run Tests Frontend
 
 on:
   # Trigger the workflow manually or on push/pull request events
