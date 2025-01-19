@@ -7,13 +7,13 @@ on:
       - dev
 
 env:
-  AZURE_WEBAPP_NAME: gustavogavancho-calculator-backend-uat
+  AZURE_WEBAPP_NAME: gustavogavanchol-calculator-backend-uat
   AZURE_WEBAPP_PACKAGE_PATH: master-ugr.calculator.back-end/calculator.backend/publish
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 8.0.x
   WORKING_DIRECTORY: master-ugr.calculator.back-end/calculator.backend
   TEST_PATH: master-ugr.calculator.back-end/tests/calculator.backend.test
-  CALCULATOR_BACKEND_URL: https://gustavogavancho-calculator-backend-uat.azurewebsites.net/
+  CALCULATOR_BACKEND_URL: https://gustavogavanchol-calculator-backend-uat.azurewebsites.net/
 
 jobs:
   build:
@@ -53,7 +53,7 @@ jobs:
         dotnet tool install --global dotnet-sonarscanner
         export PATH="$PATH:/home/runner/.dotnet/tools"
         dotnet sonarscanner begin \
-          /k:"ugr-master_case3" \
+          /k:"ugr-master_ugr-master-ds" \
           /o:"ugr-master" \
           /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
           /d:sonar.host.url="https://sonarcloud.io" \
