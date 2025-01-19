@@ -21,7 +21,7 @@ env:
     AZURE_WEBAPP_NAME_BACKEND_PROD: gustavogavanchol-calculator-backend
     AZURE_WEBAPP_PACKAGE_PATH_BACKEND: master-ugr.calculator.back-end/calculator.backend/publish
     WORKING_DIRECTORY_BACKEND: master-ugr.calculator.back-end/calculator.backend
-    CALCULATOR_BACKEND_URL_UAT: https://gustavogavanchol-calculator-backend-uat.azurewebsites.net/
+    CALCULATOR_BACKEND_URL_UAT: https://gustavogavanchol-calculator-backend-uat.azurewebsites.net
     TEST_PATH_BACKEND: master-ugr.calculator.back-end/tests/calculator.backend.test
     # Library Domain
     TEST_PATH_LIB: master-ugr.calculator.lib/tests/calculator.lib.test

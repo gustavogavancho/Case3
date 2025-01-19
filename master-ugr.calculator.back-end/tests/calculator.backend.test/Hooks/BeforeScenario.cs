@@ -14,9 +14,9 @@ public class BeforeScenario
     public void ScenarioPreparation(ScenarioContext scenarioContext)
     {
         // Getting url from environment variable
-        // When not present, default to https://localhost:7012/
+        // When not present, default to https://localhost:7012
         var urlBase =
-            Environment.GetEnvironmentVariable("CALCULATOR_BACKEND_URL") ?? "https://localhost:7012/";
+            Environment.GetEnvironmentVariable("CALCULATOR_BACKEND_URL") ?? "https://localhost:7012";
         _scenarioContext.Add("urlBase", urlBase);
     }
 }
