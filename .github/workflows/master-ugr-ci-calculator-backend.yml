@@ -6,9 +6,6 @@ on:
   push:
     branches:
     - backed-end
-  pull_request:
-    branches:
-    - dev
 
 env:
   AZURE_WEBAPP_NAME: gustavogavanchol-calculator-backend-uat
