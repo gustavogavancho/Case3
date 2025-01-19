@@ -1,0 +1,31 @@
+name: Run Tests
+
+on:
+  # Trigger the workflow manually or on push/pull request events
+  workflow_dispatch:
+  push:
+    branches:
+    - backed-end
+  pull_request:
+    branches:
+    - dev
+
+env:
+  # Environment variables for the workflow
+  DOTNET_CORE_VERSION: 8.0.x
+  TEST_PATH: master-ugr.calculator.back-end/tests/calculator.backend.test
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      # Checkout the repository
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+
+    - name: Run tests
+      run: dotnet test ${{ env.TEST_PATH }}
