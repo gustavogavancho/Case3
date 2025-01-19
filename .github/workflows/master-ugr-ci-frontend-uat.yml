@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   pull_request:
     branches:
-      - dev
+    - dev
 
 env:
   # Environment variables for the workflow
@@ -16,94 +16,91 @@ env:
   WORKING_DIRECTORY: master-ugr.calculator.front-end/calculator.frontend
   TEST_PATH: master-ugr.calculator.front-end/tests/calculator.frontend.tests
   CALCULATOR_FRONTEND_URL: https://gustavogavanchol-calculator-frontend-uat.azurewebsites.net
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        # Checkout the repository
+    - uses: actions/checkout@v4
+      # Checkout the repository      
+    - name: Listing current dir
+      run: ls -la
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+      # Setup the .NET SDK version specified in the environment variables
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+    - name: Restore
+      run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
+      # Restore the dependencies for the .NET project
 
-      - name: Restore dependencies
-        run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
+    - name: Build
+      run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+      # Build the .NET project in Release configuration without restoring dependencies
 
-      - name: Build project
-        run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+    - name: Publish
+      run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
+      # Publish the .NET project to the specified output path without building
 
-      - name: Install Playwright Browsers
-        run: pwsh ${{ env.TEST_PATH }}/bin/Debug/net8.0/playwright.ps1 install --with-deps
-        # Install Playwright dependencies
+    - name: Publish Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: webapp
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      # Upload the published artifacts for later use in the deploy job
 
-      - name: Run unit tests and generate coverage
-        run: dotnet test "${{ env.WORKING_DIRECTORY }}" --collect:"XPlat Code Coverage" --results-directory TestResults
-        # Run unit tests and generate code coverage report
-
-      - name: Publish project
-        run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
-        # Publish the application to the specified path
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: webapp
-          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-
-      - name: SonarCloud Scan
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          dotnet tool install --global dotnet-sonarscanner
-          export PATH="$PATH:/home/runner/.dotnet/tools"
-          dotnet sonarscanner begin \
-            /k:"ugr-master_ugr-master-ds" \
-            /o:"ugr-master" \
-            /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.opencover.reportsPaths="TestResults/Coverage/coverage.opencover.xml"
-          dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }}
-          dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+    - name: SonarCloud Scan
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: |
+        dotnet tool install --global dotnet-sonarscanner
+        export PATH="$PATH:/home/runner/.dotnet/tools"
+        dotnet sonarscanner begin \
+          /k:"ugr-master_ugr-master-ds" \
+          /o:"ugr-master" \
+          /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+          /d:sonar.host.url="https://sonarcloud.io" \
+          /d:sonar.cs.opencover.reportsPaths="${{ env.WORKING_DIRECTORY }}/TestResults/Coverage/coverage.opencover.xml"
+        dotnet build "${{ env.WORKING_DIRECTORY }}"
+        dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: webapp
-          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v4
+      with:
+        name: webapp
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      # Download the artifacts uploaded in the build job
 
-      - name: Deploy to Azure WebApp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-          publish-profile: ${{ secrets.MASTER_UGR_CI_FRONTEND_UAT_SPN }}
-
+    - name: Deploy to Azure WebApp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        publish-profile: ${{ secrets.MASTER_UGR_CI_FRONTEND_UAT_SPN }}
+        
+      # Deploy the application to the specified Azure Web App
   test:
     runs-on: ubuntu-latest
     needs: deploy
     steps:
       - uses: actions/checkout@v4
-        # Checkout the repository
-
+        # Checkout the repository (each job runs in a fresh VM)
+  
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
-
-      - name: Build test project
-        run: dotnet build "${{ env.TEST_PATH }}" --configuration Debug
-
-      - name: Install Playwright Browsers
+        # Setup the .NET SDK version specified in the environment variables
+      - name: Build
+        run: dotnet build ${{ env.TEST_PATH }} --configuration Debug
+      - name : Install playwright
         run: pwsh ${{ env.TEST_PATH }}/bin/Debug/net8.0/playwright.ps1 install --with-deps
+      - name: run tests
+        # Run tests
+        run: dotnet test ${{ env.TEST_PATH }}
 
-      - name: Run Playwright tests
-        run: dotnet test "${{ env.TEST_PATH }}"
-        # Run Playwright tests
