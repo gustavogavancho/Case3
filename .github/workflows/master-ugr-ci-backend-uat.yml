@@ -53,7 +53,7 @@ jobs:
         dotnet tool install --global dotnet-sonarscanner
         export PATH="$PATH:/home/runner/.dotnet/tools"
         dotnet sonarscanner begin \
-          /k:"ugr-master_case3" \
+          /k:"ugr-master_ugr-master-ds" \
           /o:"ugr-master" \
           /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
           /d:sonar.host.url="https://sonarcloud.io" \
