@@ -9,19 +9,19 @@ on:
 
 env:
     # Front-end Domain    
-    AZURE_WEBAPP_NAME_FRONTEND_UAT: gustavogavancho-calculator-frontend-uat
-    AZURE_WEBAPP_NAME_FRONTEND_PROD: gustavogavancho-calculator-frontend
+    AZURE_WEBAPP_NAME_FRONTEND_UAT: gustavogavanchol-calculator-frontend-uat
+    AZURE_WEBAPP_NAME_FRONTEND_PROD: gustavogavanchol-calculator-frontend
     AZURE_WEBAPP_PACKAGE_PATH_FRONTEND: master-ugr.calculator.front-end/calculator.frontend/publish
     WORKING_DIRECTORY_FRONTEND: master-ugr.calculator.front-end/calculator.frontend
-    CALCULATOR_FRONTEND_URL_UAT: https://gustavogavancho-calculator-frontend-uat.azurewebsites.net
+    CALCULATOR_FRONTEND_URL_UAT: https://gustavogavanchol-calculator-frontend-uat.azurewebsites.net
     TEST_PATH_FRONTEND: master-ugr.calculator.front-end/tests/calculator.frontend.tests
-    CALCULATOR_FRONTEND_URL_PROD: https://gustavogavancho-calculator-frontend.azurewebsites.net/
+    CALCULATOR_FRONTEND_URL_PROD: https://gustavogavanchol-calculator-frontend.azurewebsites.net/
     # Back-end Domain
-    AZURE_WEBAPP_NAME_BACKEND_UAT: gustavogavancho-calculator-backend-uat
-    AZURE_WEBAPP_NAME_BACKEND_PROD: gustavogavancho-calculator-backend
+    AZURE_WEBAPP_NAME_BACKEND_UAT: gustavogavanchol-calculator-backend-uat
+    AZURE_WEBAPP_NAME_BACKEND_PROD: gustavogavanchol-calculator-backend
     AZURE_WEBAPP_PACKAGE_PATH_BACKEND: master-ugr.calculator.back-end/calculator.backend/publish
     WORKING_DIRECTORY_BACKEND: master-ugr.calculator.back-end/calculator.backend
-    CALCULATOR_BACKEND_URL_UAT: https://gustavogavancho-calculator-backend-uat.azurewebsites.net/
+    CALCULATOR_BACKEND_URL_UAT: https://gustavogavanchol-calculator-backend-uat.azurewebsites.net/
     TEST_PATH_BACKEND: master-ugr.calculator.back-end/tests/calculator.backend.test
     # Library Domain
     TEST_PATH_LIB: master-ugr.calculator.lib/tests/calculator.lib.test
@@ -104,6 +104,21 @@ jobs:
             dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
         - name: Restore Back-End
           run: dotnet restore "${{ env.WORKING_DIRECTORY_BACKEND }}"
+        - name: SonarCloud Scan
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          run: |
+            dotnet tool install --global dotnet-sonarscanner
+            export PATH="$PATH:/home/runner/.dotnet/tools"
+            dotnet sonarscanner begin \
+              /k:"ugr-master_ugr-master-ds" \
+              /o:"ugr-master" \
+              /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+              /d:sonar.host.url="https://sonarcloud.io" \
+              /d:sonar.cs.opencover.reportsPaths="${{ env.WORKING_DIRECTORY_BACKEND }}/TestResults/Coverage/coverage.opencover.xml"
+            dotnet build "${{ env.WORKING_DIRECTORY_BACKEND }}"
+            dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
         - name: Build Back-End
           run: dotnet build "${{ env.WORKING_DIRECTORY_BACKEND }}" --configuration ${{ env.CONFIGURATION }} --no-restore
         - name: Package Back-End
@@ -126,6 +141,21 @@ jobs:
           run: dotnet restore "${{ env.WORKING_DIRECTORY_FRONTEND }}"
         - name: Build Front-End
           run: dotnet build "${{ env.WORKING_DIRECTORY_FRONTEND }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+        - name: SonarCloud Scan
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          run: |
+            dotnet tool install --global dotnet-sonarscanner
+            export PATH="$PATH:/home/runner/.dotnet/tools"
+            dotnet sonarscanner begin \
+              /k:"ugr-master_ugr-master-ds" \
+              /o:"ugr-master" \
+              /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+              /d:sonar.host.url="https://sonarcloud.io" \
+              /d:sonar.cs.opencover.reportsPaths="${{ env.WORKING_DIRECTORY_FRONTEND }}/TestResults/Coverage/coverage.opencover.xml"
+            dotnet build "${{ env.WORKING_DIRECTORY_FRONTEND }}"
+            dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
         - name: Package Front-End
           run: dotnet publish "${{ env.WORKING_DIRECTORY_FRONTEND }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH_FRONTEND }}"
         - name: Publish Artifacts Back-End
