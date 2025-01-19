@@ -1,0 +1,62 @@
+name: Run Tests Backend
+
+on:
+  # Trigger the workflow manually or on push/pull request events
+  workflow_dispatch:
+  push:
+    branches:
+    - front-end
+  pull_request:
+    branches:
+    - dev
+
+env:
+  AZURE_WEBAPP_NAME: gustavogavanchol-calculator-frontend-uat
+  AZURE_WEBAPP_PACKAGE_PATH: master-ugr.calculator.front-end/calculator.frontend/publish
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 8.0.x
+  WORKING_DIRECTORY: master-ugr.calculator.front-end/calculator.frontend
+  TEST_PATH: master-ugr.calculator.front-end/tests/calculator.frontend.tests
+  CALCULATOR_FRONTEND_URL: https://gustavogavanchol-calculator-frontend-uat.azurewebsites.net
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      # Checkout the repository      
+    - name: Listing current dir
+      run: ls -la
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+      # Setup the .NET SDK version specified in the environment variables
+
+    - name: Restore
+      run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
+      # Restore the dependencies for the .NET project
+
+    - name: Build
+      run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+      # Build the .NET project in Release configuration without restoring dependencies
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+        # Checkout the repository (each job runs in a fresh VM)
+  
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+        # Setup the .NET SDK version specified in the environment variables
+      - name: Build
+        run: dotnet build ${{ env.TEST_PATH }} --configuration Debug
+      - name : Install playwright
+        run: pwsh ${{ env.TEST_PATH }}/bin/Debug/net8.0/playwright.ps1 install --with-deps
+      - name: run tests
+        # Run tests
+        run: dotnet test ${{ env.TEST_PATH }}
