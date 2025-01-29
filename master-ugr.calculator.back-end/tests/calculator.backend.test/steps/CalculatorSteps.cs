@@ -32,7 +32,7 @@ public class CalculatorSteps
             var urlBase = _scenarioContext.Get<string>("urlBase");
             var firstNumber = _scenarioContext.Get<int>("firstNumber");
             var secondNumber = _scenarioContext.Get<int>("secondNumber");
-            var url = $"{urlBase}api/Calculator/";
+            var url = $"{urlBase}/api/Calculator/";
             var api_call = $"{url}{operation}?a={firstNumber}&b={secondNumber}";
             var response = client.GetAsync(api_call).Result;
             response.EnsureSuccessStatusCode();
